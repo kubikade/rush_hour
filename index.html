@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#080c14" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Rush Hour — AIC Tech Vibe</title>
+  <meta name="description" content="Rush Hour puzzle game — move the red car out of the parking lot! AIC University Tech Fair." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+
+  <!-- App Styles -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!--
+    ┌─────────────────────────────────────────────────────────┐
+    │  FIREBASE CDN — Replace with your actual project SDK   │
+    │  Get this from: Firebase Console → Project Settings    │
+    │  → Your apps → CDN snippet                             │
+    └─────────────────────────────────────────────────────────┘
+  -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+
+<body>
+  <!-- Win flash overlay -->
+  <div id="win-flash" aria-hidden="true"></div>
+
+  <!-- Particle canvas -->
+  <canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+  <!-- Toast notification -->
+  <div id="toast" role="alert" aria-live="polite"></div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!--  MAIN APP                                              -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="app">
+
+    <!-- ── Header ── -->
+    <header id="header">
+      <div id="logo">
+        <span class="title">Rush Hour</span>
+        <span class="subtitle">AIC · Tech Fair 2026</span>
+      </div>
+      <div id="level-badge">Tutorial</div>
+    </header>
+
+    <!-- ── HUD Stats ── -->
+    <section id="hud" aria-label="Game statistics">
+      <div class="hud-card" id="timer-card">
+        <span class="hud-label">⏱ Time</span>
+        <span class="hud-value" id="timer-display">3:00</span>
+      </div>
+      <div class="hud-card" id="moves-card">
+        <span class="hud-label">⚡ Moves</span>
+        <span class="hud-value" id="moves-display">0</span>
+      </div>
+      <div class="hud-card" id="exit-card">
+        <span class="hud-label">🚪 Exit</span>
+        <span class="hud-value" style="font-size:22px" id="exit-display">→</span>
+      </div>
+    </section>
+
+    <!-- ── Game Grid ── -->
+    <main id="grid-wrapper" aria-label="Rush Hour game grid">
+      <!-- Animated border ring -->
+      <div id="grid-border">
+        <div id="grid-border-inner"></div>
+      </div>
+
+      <!-- Grid (cells + vehicles rendered by JS) -->
+      <div id="game-grid" role="grid" aria-label="6x6 parking grid">
+        <!-- Populated by app.js renderGrid() -->
+      </div>
+
+      <!-- Tutorial overlay -->
+      <div id="tutorial-overlay" role="dialog" aria-label="Tutorial: how to play" aria-modal="true">
+        <span class="hand-icon" aria-hidden="true">👆</span>
+        <span class="tutorial-text glow-text">Drag the cars!</span>
+        <span class="tutorial-sub">Move the 🔴 red car to the exit →</span>
+        <span class="tutorial-sub" style="font-size:10px; margin-top:4px; color: #3a5a7a;">Tap anywhere to start</span>
+      </div>
+    </main>
+
+    <!-- ── Controls ── -->
+    <nav id="controls" aria-label="Game controls">
+      <!-- Row 1: level selectors -->
+      <div id="level-buttons">
+        <button class="btn btn-secondary" id="btn-level0" aria-label="Play tutorial level">
+          <span class="btn-icon" aria-hidden="true">📖</span>
+          Tutorial
+        </button>
+        <button class="btn btn-danger" id="btn-level2" aria-label="Play the competitive challenge">
+          <span class="btn-icon" aria-hidden="true">🔥</span>
+          Challenge
+        </button>
+      </div>
+      <!-- Row 2: restart -->
+      <button class="btn btn-secondary btn-wide" id="btn-restart" aria-label="Restart current level">
+        <span style="margin-right:6px">🔄</span> Restart Current Level
+      </button>
+    </nav>
+
+    <!-- ── Leaderboard Link ── -->
+    <a href="leaderboard.html" id="leaderboard-link" aria-label="Open live leaderboard">
+      <span aria-hidden="true">📊</span>
+      LIVE LEADERBOARD
+    </a>
+
+  </div><!-- /#app -->
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!--  RESULT / SUBMIT MODAL                                 -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+
+      <!-- Modal Header -->
+      <span class="modal-icon" id="modal-icon" aria-hidden="true">🏆</span>
+      <h2 class="modal-title" id="modal-title">PUZZLE SOLVED!</h2>
+      <p class="modal-subtitle" id="modal-subtitle">You escaped the parking lot!</p>
+
+      <!-- Stats -->
+      <div class="modal-stats">
+        <div class="stat-chip">
+          <span class="stat-chip-label">Time</span>
+          <span class="stat-chip-value" id="stat-time">0:00</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-chip-label">Moves</span>
+          <span class="stat-chip-value" id="stat-moves">0</span>
+        </div>
+      </div>
+
+      <!-- Data Collection Form -->
+      <form id="submit-form" autocomplete="on" onsubmit="return false;">
+
+        <div class="form-group">
+          <label class="form-label" for="nickname-input">Nickname</label>
+          <input
+            class="form-input"
+            type="text"
+            id="nickname-input"
+            name="nickname"
+            placeholder="E.g. SpeedDemon42"
+            maxlength="30"
+            autocomplete="nickname"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email-input">Email</label>
+          <input
+            class="form-input"
+            type="email"
+            id="email-input"
+            name="email"
+            placeholder="your@university.edu"
+            autocomplete="email"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-checkbox-row" for="offer-checkbox">
+            <input type="checkbox" id="offer-checkbox" name="wantsOffer" />
+            <span class="form-checkbox-label">
+              I want to receive info about
+              <span>PhD programs & research projects</span>
+              at AIC
+            </span>
+          </label>
+        </div>
+
+        <button class="btn-submit" type="submit" id="submit-btn">
+          🚀 Submit to Leaderboard
+        </button>
+
+        <button
+          type="button"
+          id="play-again-btn"
+          style="
+            width:100%;
+            margin-top:10px;
+            padding:10px;
+            background:transparent;
+            border:1px solid rgba(0,212,255,0.2);
+            border-radius:8px;
+            color: var(--text-muted);
+            font-family:'Inter',sans-serif;
+            font-size:12px;
+            cursor:pointer;
+            letter-spacing:1px;
+          "
+        >
+          Skip &amp; Play Again
+        </button>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ── App Script ── -->
+  <script src="app.js"></script>
+</body>
+</html>

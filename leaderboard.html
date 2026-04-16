@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080c14" />
+  <title>Live Leaderboard — Rush Hour AIC</title>
+  <meta name="description"
+    content="Live Rush Hour leaderboard for AIC Tech Fair 2026. Real-time rankings updated automatically." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap"
+    rel="stylesheet" />
+
+  <!--
+    ┌─────────────────────────────────────────────────────────┐
+    │  FIREBASE CDN (same as index.html)                      │
+    └─────────────────────────────────────────────────────────┘
+  -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    /* ── Reset & Base ── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-dark: #080c14;
+      --bg-panel: #0d1526;
+      --bg-card: #111e33;
+      --neon-blue: #00d4ff;
+      --neon-green: #00ff88;
+      --neon-red: #ff3366;
+      --neon-gold: #ffd700;
+      --neon-silver: #c0c8d8;
+      --neon-bronze: #cd7f32;
+      --text-primary: #e8f4ff;
+      --text-muted: #5a7a9a;
+      --border-glow: rgba(0, 212, 255, 0.25);
+      --cell-radius: 12px;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Page Shell ── */
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+
+    /* ── Header ── */
+    .lb-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 24px 0 20px;
+      text-align: center;
+    }
+
+    .lb-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(20px, 6vw, 36px);
+      font-weight: 900;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .lb-subtitle {
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 51, 102, 0.1);
+      border: 1px solid rgba(255, 51, 102, 0.4);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      color: var(--neon-red);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--neon-red);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--neon-red);
+      animation: livePulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes livePulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.7);
+      }
+    }
+
+    /* ── Stats Banner ── */
+    .stats-banner {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      flex: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      border-radius: var(--cell-radius);
+      padding: 14px 10px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 16px rgba(0, 212, 255, 0.05);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-green));
+    }
+
+    .stat-card-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(20px, 5vw, 28px);
+      font-weight: 700;
+      color: var(--neon-blue);
+      line-height: 1;
+      display: block;
+    }
+
+    .stat-card-label {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 4px;
+      display: block;
+    }
+
+    /* ── Leaderboard Table ── */
+    .lb-table-wrap {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-glow);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow:
+        0 0 40px rgba(0, 212, 255, 0.1),
+        0 16px 48px rgba(0, 0, 0, 0.4);
+    }
+
+    .lb-table-header {
+      display: grid;
+      grid-template-columns: 48px 1fr 100px 70px 80px;
+      gap: 0;
+      padding: 12px 16px;
+      background: rgba(0, 212, 255, 0.05);
+      border-bottom: 1px solid var(--border-glow);
+    }
+
+    .lb-col-label {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .lb-col-label.right {
+      text-align: right;
+    }
+
+    .lb-col-label.center {
+      text-align: center;
+    }
+
+    /* ── Table Body ── */
+    #leaderboard-body {
+      display: flex;
+      flex-direction: column;
+      min-height: 200px;
+    }
+
+    .lb-row {
+      display: grid;
+      grid-template-columns: 48px 1fr 100px 70px 80px;
+      gap: 0;
+      padding: 12px 16px;
+      align-items: center;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.05);
+      transition: background 0.2s ease;
+      animation: rowEnter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes rowEnter {
+      from {
+        opacity: 0;
+        transform: translateX(-16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .lb-row:hover {
+      background: rgba(0, 212, 255, 0.04);
+    }
+
+    .lb-row:last-child {
+      border-bottom: none;
+    }
+
+    /* Top 3 highlight */
+    .lb-row.rank-1 {
+      background: rgba(255, 215, 0, 0.04);
+    }
+
+    .lb-row.rank-2 {
+      background: rgba(192, 200, 216, 0.03);
+    }
+
+    .lb-row.rank-3 {
+      background: rgba(205, 127, 50, 0.03);
+    }
+
+    .lb-row.rank-1:hover {
+      background: rgba(255, 215, 0, 0.08);
+    }
+
+    .lb-row.rank-2:hover {
+      background: rgba(192, 200, 216, 0.06);
+    }
+
+    .lb-row.rank-3:hover {
+      background: rgba(205, 127, 50, 0.06);
+    }
+
+    /* Rank badge */
+    .rank-badge {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .rank-1 .rank-badge {
+      color: var(--neon-gold);
+      text-shadow: 0 0 12px var(--neon-gold);
+    }
+
+    .rank-2 .rank-badge {
+      color: var(--neon-silver);
+      text-shadow: 0 0 12px var(--neon-silver);
+    }
+
+    .rank-3 .rank-badge {
+      color: var(--neon-bronze);
+      text-shadow: 0 0 12px var(--neon-bronze);
+    }
+
+    /* Nickname cell */
+    .lb-nickname {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding-right: 8px;
+    }
+
+    .lb-nickname .won-badge {
+      display: inline-block;
+      background: rgba(0, 255, 136, 0.15);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 10px;
+      padding: 1px 7px;
+      font-size: 9px;
+      color: var(--neon-green);
+      letter-spacing: 1px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* Time cell */
+    .lb-time {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: right;
+      color: var(--neon-blue);
+    }
+
+    .rank-1 .lb-time {
+      color: var(--neon-gold);
+    }
+
+    .rank-2 .lb-time {
+      color: var(--neon-silver);
+    }
+
+    .rank-3 .lb-time {
+      color: var(--neon-bronze);
+    }
+
+    /* Moves cell */
+    .lb-moves {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      text-align: right;
+      color: var(--text-muted);
+    }
+
+    /* Date cell */
+    .lb-date {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* ── Loading State ── */
+    .lb-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      gap: 16px;
+      color: var(--text-muted);
+    }
+
+    .lb-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(0, 212, 255, 0.1);
+      border-top-color: var(--neon-blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .lb-loading-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: var(--neon-blue);
+      text-transform: uppercase;
+    }
+
+    /* ── Empty State ── */
+    .lb-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      gap: 12px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .lb-empty-icon {
+      font-size: 48px;
+    }
+
+    .lb-empty-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      letter-spacing: 2px;
+      color: var(--neon-blue);
+      text-transform: uppercase;
+    }
+
+    .lb-empty-desc {
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    /* ── New Entry Flash ── */
+    @keyframes newEntryFlash {
+
+      0%,
+      100% {
+        background: transparent;
+      }
+
+      50% {
+        background: rgba(0, 255, 136, 0.12);
+      }
+    }
+
+    .lb-row.new-entry {
+      animation: rowEnter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both, newEntryFlash 1.2s ease 0.3s 2;
+    }
+
+    /* ── Footer / Back Link ── */
+    .lb-footer {
+      text-align: center;
+      margin-top: 28px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 10px 20px;
+      border: 1px solid rgba(0, 212, 255, 0.15);
+      border-radius: 24px;
+      transition: all 0.2s ease;
+    }
+
+    .back-link:hover {
+      color: var(--neon-blue);
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 16px rgba(0, 212, 255, 0.2);
+    }
+
+    /* ── Update Pulse (real-time badge) ── */
+    #update-indicator {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--neon-green);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--neon-green);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+      z-index: 99;
+      box-shadow: 0 0 16px rgba(0, 255, 136, 0.3);
+    }
+
+    #update-indicator.show {
+      opacity: 1;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+
+      .lb-table-header,
+      .lb-row {
+        grid-template-columns: 40px 1fr 90px 0 0;
+      }
+
+      .lb-moves,
+      .lb-date,
+      .lb-col-label:nth-child(4),
+      .lb-col-label:nth-child(5) {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Real-time update badge -->
+  <div id="update-indicator" aria-live="polite">⚡ Updated</div>
+
+  <div class="page">
+
+    <!-- ── Header ── -->
+    <header class="lb-header">
+      <h1 class="lb-title">Command Center</h1>
+      <p class="lb-subtitle">Rush Hour — AIC Tech Fair 2026</p>
+      <span class="live-badge">
+        <span class="live-dot"></span>
+        Live Ranking
+      </span>
+    </header>
+
+    <!-- ── Stats Summary ── -->
+    <section class="stats-banner" aria-label="Tournament statistics">
+      <div class="stat-card">
+        <span class="stat-card-value" id="stat-total">—</span>
+        <span class="stat-card-label">Players</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card-value" id="stat-wins">—</span>
+        <span class="stat-card-label">Winners</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card-value" id="stat-best">—</span>
+        <span class="stat-card-label">Best Time</span>
+      </div>
+    </section>
+
+    <!-- ── Leaderboard Table ── -->
+    <article class="lb-table-wrap" aria-label="Leaderboard rankings">
+
+      <!-- Column Headers -->
+      <div class="lb-table-header" role="row">
+        <span class="lb-col-label center" role="columnheader">#</span>
+        <span class="lb-col-label" role="columnheader">Player</span>
+        <span class="lb-col-label right" role="columnheader">Time</span>
+        <span class="lb-col-label right" role="columnheader">Moves</span>
+        <span class="lb-col-label right" role="columnheader">Date</span>
+      </div>
+
+      <!-- Rows injected by JS -->
+      <div id="leaderboard-body" role="rowgroup">
+        <div class="lb-loading" id="lb-loading">
+          <div class="lb-spinner"></div>
+          <span class="lb-loading-text">Connecting...</span>
+        </div>
+      </div>
+
+    </article>
+
+    <!-- ── Footer ── -->
+    <footer class="lb-footer">
+      <a href="index.html" class="back-link">
+        ← Back to Game
+      </a>
+    </footer>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════ -->
+  <!--  LEADERBOARD SCRIPT                                     -->
+  <!-- ════════════════════════════════════════════════════════ -->
+  <script>
+    // ─── Firebase Config ─────────────────────────────────────
+    const firebaseConfig = {
+      apiKey:            "AIzaSyDuwfL6stihPCPOSdLm83DOyGTKqDu056s",
+      authDomain:        "rush-hour-76a77.firebaseapp.com",
+      // ⚠️  Required for Realtime Database — verify this URL
+      //  in Firebase Console → Realtime Database → Data tab
+      databaseURL:       "https://rush-hour-76a77-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId:         "rush-hour-76a77",
+      storageBucket:     "rush-hour-76a77.firebasestorage.app",
+      messagingSenderId: "718984440819",
+      appId:             "1:718984440819:web:00512625166e277e50c086",
+      measurementId:     "G-C3WHDPNFJ7"
+    };
+
+    // ─── Init ────────────────────────────────────────────────
+    let db = null;
+
+    function initFirebase() {
+      try {
+        const app = firebase.apps.length
+          ? firebase.apps[0]
+          : firebase.initializeApp(firebaseConfig);
+        db = firebase.database(app);
+        console.log('[Leaderboard] Firebase connected ✓', firebaseConfig.databaseURL);
+      } catch (e) {
+        console.error('[Leaderboard] Firebase failed:', e.message);
+        showError('Firebase connection failed. Check the databaseURL and Database Rules.');
+      }
+    }
+
+    // ─── Leaderboard State ────────────────────────────────────
+    let entries = [];   // All entries from DB
+    let firstLoad = true;
+
+    // ─── Real-time listener ───────────────────────────────────
+    function subscribeLeaderboard() {
+      if (!db) return;
+
+      const ref = db.ref('leaderboard');
+
+      // Listen for any changes (added / changed / removed)
+      ref.on('value', snapshot => {
+        const data = snapshot.val();
+        entries = [];
+
+        if (data) {
+          Object.entries(data).forEach(([key, val]) => {
+            entries.push({ key, ...val });
+          });
+
+          // Sort by timeTakenMS ascending (fastest first), then won (winners first)
+          entries.sort((a, b) => {
+            if (a.won && !b.won) return -1;
+            if (!a.won && b.won) return 1;
+            return (a.timeTakenMS || 0) - (b.timeTakenMS || 0);
+          });
+        }
+
+        renderLeaderboard(entries);
+
+        if (!firstLoad) {
+          flashUpdateIndicator();
+        }
+        firstLoad = false;
+      });
+    }
+
+    // ─── Render ───────────────────────────────────────────────
+    function renderLeaderboard(entries) {
+      const body = document.getElementById('leaderboard-body');
+      const totalEl = document.getElementById('stat-total');
+      const winsEl = document.getElementById('stat-wins');
+      const bestEl = document.getElementById('stat-best');
+
+      // Hide loading
+      const loading = document.getElementById('lb-loading');
+      if (loading) loading.remove();
+
+      // Stats
+      const winners = entries.filter(e => e.won);
+      totalEl.textContent = entries.length;
+      winsEl.textContent = winners.length;
+      if (winners.length > 0) {
+        const best = winners[0].timeTakenMS;
+        bestEl.textContent = formatTime(best);
+      } else {
+        bestEl.textContent = '—';
+      }
+
+      // Empty state
+      if (entries.length === 0) {
+        body.innerHTML = `
+          <div class="lb-empty">
+            <span class="lb-empty-icon">🏁</span>
+            <span class="lb-empty-title">No entries yet</span>
+            <p class="lb-empty-desc">Be the first to solve the puzzle<br>and claim the top spot!</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Build rows
+      body.innerHTML = '';
+      entries.forEach((entry, i) => {
+        const rank = i + 1;
+        const rankClass = rank <= 3 ? `rank-${rank}` : '';
+        const rankLabel = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+
+        const wonBadge = entry.won ? '<span class="won-badge">WIN</span>' : '';
+        const dateStr = entry.timestamp ? formatDate(entry.timestamp) : '—';
+        const nickname = escapeHtml(entry.nickname || 'Anonymous');
+
+        const row = document.createElement('div');
+        row.className = `lb-row ${rankClass}`;
+        row.setAttribute('role', 'row');
+        row.setAttribute('aria-label', `Rank ${rank}: ${nickname}`);
+
+        row.innerHTML = `
+          <span class="rank-badge" role="cell">${rankLabel}</span>
+          <span class="lb-nickname" role="cell" title="${nickname}">${nickname}${wonBadge}</span>
+          <span class="lb-time" role="cell">${formatTime(entry.timeTakenMS)}</span>
+          <span class="lb-moves" role="cell">${entry.moves ?? '—'}</span>
+          <span class="lb-date" role="cell">${dateStr}</span>
+        `;
+
+        body.appendChild(row);
+      });
+
+      // Mark most recently added row as new
+      if (!firstLoad && entries.length > 0) {
+        const rows = body.querySelectorAll('.lb-row');
+        // Find the row by most recent timestamp
+        let newestIdx = 0;
+        let newestTs = 0;
+        entries.forEach((e, i) => {
+          if ((e.timestamp || 0) > newestTs) { newestTs = e.timestamp; newestIdx = i; }
+        });
+        if (rows[newestIdx]) {
+          rows[newestIdx].classList.remove('new-entry');
+          void rows[newestIdx].offsetWidth; // reflow
+          rows[newestIdx].classList.add('new-entry');
+        }
+      }
+    }
+
+    // ─── Helpers ─────────────────────────────────────────────
+    function formatTime(ms) {
+      if (!ms && ms !== 0) return '—';
+      const secs = Math.floor(ms / 1000);
+      const m = Math.floor(secs / 60).toString().padStart(2, '0');
+      const s = (secs % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function formatDate(ts) {
+      if (!ts) return '';
+      const d = new Date(ts);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(str));
+      return div.innerHTML;
+    }
+
+    function flashUpdateIndicator() {
+      const el = document.getElementById('update-indicator');
+      el.classList.remove('show');
+      void el.offsetWidth;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2000);
+    }
+
+    function showError(msg) {
+      const body = document.getElementById('leaderboard-body');
+      body.innerHTML = `
+        <div class="lb-empty">
+          <span class="lb-empty-icon">⚠️</span>
+          <span class="lb-empty-title">Connection Error</span>
+          <p class="lb-empty-desc">${msg}</p>
+        </div>
+      `;
+    }
+
+    // ─── Boot ────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      initFirebase();
+      subscribeLeaderboard();
+    });
+  </script>
+</body>
+
+</html>
