@@ -90,52 +90,48 @@ const LEVELS = {
 
   2: {
     /**
-     * COMPETITIVE LEVEL 2 — Hard chain-of-moves puzzle (14 vehicles).
+     * COMPETITION LEVEL — Authentic Rush Hour puzzle, 31-move solution.
+     * Source: michaelfogleman.com/rush
+     * Board string: oBBBoLCCCJoLoAAJoLDDIKooHoIKEEHFFGGo
      *
-     * Grid layout (0-indexed, R = red car, exit → right at row 2):
+     * Grid layout (0-indexed, A = red car, exit → right row 2):
      *      c0   c1   c2   c3   c4   c5
-     * r0:   .    A    A    B    B    .
-     * r1:   C    D    D    .    E    E
-     * r2:   C    R    R    F    G    .  EXIT→
-     * r3:   N    .    .    F    G    J
-     * r4:   N    I    I    L    L    J
-     * r5:   K    K    .    M    M    .
+     * r0:   .    B    B    B    .    L
+     * r1:   C    C    C    J    .    L
+     * r2:   .    A    A    J    .    L   EXIT→
+     * r3:   D    D    I    K    .    .
+     * r4:   H    .    I    K    E    E
+     * r5:   H    F    F    G    G    .
      *
-     * Verified 8-move solution:
-     *   1. B right 1  → r0c3 free
-     *   2. F up 2     → r2c3 free ✓
-     *   3. C up 1     → r2c0 free
-     *   4. N up 1     → r4c0 free
-     *   5. I left 1   → r4c2 free
-     *   6. L left 1   → r4c4 free
-     *   7. G down 1   → r2c4 free ✓  (r2c5 was always free)
-     *   8. R right →  EXIT
+     * Vehicle key:
+     *   A (redcar) — H car,   row 2 col 1
+     *   B          — H truck, row 0 col 1  (3 cells)
+     *   C          — H truck, row 1 col 0  (3 cells)
+     *   D          — H car,   row 3 col 0
+     *   E          — H car,   row 4 col 4
+     *   F          — H car,   row 5 col 1
+     *   G          — H car,   row 5 col 3
+     *   H          — V car,   row 4 col 0
+     *   I          — V car,   row 3 col 2
+     *   J          — V car,   row 1 col 3
+     *   K          — V car,   row 3 col 3
+     *   L          — V truck, row 0 col 5  (3 cells)
      */
     vehicles: [
-      // Red car — exit right, row 2
-      { id: 'redcar', type: 'car', orient: 'H', row: 2, col: 1, cssClass: 'red-car' },
-      // Row 0 blockers
-      { id: 'v_A', type: 'car', orient: 'H', row: 0, col: 1, cssClass: 'blue-car' }, // A
-      { id: 'v_B', type: 'car', orient: 'H', row: 0, col: 3, cssClass: 'yellow-car' }, // B — must move right first
-      // Column 0 chain: C → N
-      { id: 'v_C', type: 'car', orient: 'V', row: 1, col: 0, cssClass: 'green-car' }, // C
-      { id: 'v_N', type: 'car', orient: 'V', row: 3, col: 0, cssClass: 'teal-truck' }, // N (styled as teal)
-      // Row 1 filler
-      { id: 'v_D', type: 'car', orient: 'H', row: 1, col: 1, cssClass: 'purple-car' }, // D
-      { id: 'v_E', type: 'car', orient: 'H', row: 1, col: 4, cssClass: 'cyan-truck' }, // E (styled as cyan)
-      // Column 3/4 blockers in row 2-3
-      { id: 'v_F', type: 'car', orient: 'V', row: 2, col: 3, cssClass: 'orange-truck' }, // F — blocks r2c3
-      { id: 'v_G', type: 'car', orient: 'V', row: 2, col: 4, cssClass: 'pink-car' }, // G — blocks r2c4
-      // Column 5 blocker (row 3-4)
-      { id: 'v_J', type: 'car', orient: 'V', row: 3, col: 5, cssClass: 'purple-car' }, // J
-      // Row 4 chain: I → L
-      { id: 'v_I', type: 'car', orient: 'H', row: 4, col: 1, cssClass: 'blue-car' }, // I — blocks L from shifting left
-      { id: 'v_L', type: 'car', orient: 'H', row: 4, col: 3, cssClass: 'yellow-car' }, // L — blocks G from dropping
-      // Row 5 decoration / dead-end cars
-      { id: 'v_K', type: 'car', orient: 'H', row: 5, col: 0, cssClass: 'green-car' }, // K
-      { id: 'v_M', type: 'car', orient: 'H', row: 5, col: 3, cssClass: 'pink-car' }, // M
+      { id: 'redcar', type: 'car',   orient: 'H', row: 2, col: 1, cssClass: 'red-car'     }, // A
+      { id: 'v_B',    type: 'truck', orient: 'H', row: 0, col: 1, cssClass: 'orange-truck' }, // B — 3 cells
+      { id: 'v_C',    type: 'truck', orient: 'H', row: 1, col: 0, cssClass: 'teal-truck'   }, // C — 3 cells
+      { id: 'v_D',    type: 'car',   orient: 'H', row: 3, col: 0, cssClass: 'yellow-car'   }, // D
+      { id: 'v_E',    type: 'car',   orient: 'H', row: 4, col: 4, cssClass: 'green-car'    }, // E
+      { id: 'v_F',    type: 'car',   orient: 'H', row: 5, col: 1, cssClass: 'blue-car'     }, // F
+      { id: 'v_G',    type: 'car',   orient: 'H', row: 5, col: 3, cssClass: 'purple-car'   }, // G
+      { id: 'v_H',    type: 'car',   orient: 'V', row: 4, col: 0, cssClass: 'pink-car'     }, // H
+      { id: 'v_I',    type: 'car',   orient: 'V', row: 3, col: 2, cssClass: 'cyan-truck'   }, // I
+      { id: 'v_J',    type: 'car',   orient: 'V', row: 1, col: 3, cssClass: 'blue-car'     }, // J
+      { id: 'v_K',    type: 'car',   orient: 'V', row: 3, col: 3, cssClass: 'green-car'    }, // K
+      { id: 'v_L',    type: 'truck', orient: 'V', row: 0, col: 5, cssClass: 'purple-car'   }, // L — 3 cells
     ],
-    exitSide: 'right',
+    exitSide:  'right',
     exitIndex: 2,
   },
 };
@@ -357,6 +353,13 @@ function renderGrid() {
     el.style.height = `${h}px`;
     el.style.transform = 'translate(0,0)';
     el.setAttribute('aria-label', `${v.type} ${v.id} at row ${v.row + 1} col ${v.col + 1}`);
+
+    // Directional arrows — show axis the vehicle can slide along
+    const [arrowA, arrowB] = v.orient === 'H' ? ['◀', '▶'] : ['▲', '▼'];
+    el.innerHTML = `
+      <span class="veh-arrow veh-arrow-start" aria-hidden="true">${arrowA}</span>
+      <span class="veh-arrow veh-arrow-end"   aria-hidden="true">${arrowB}</span>
+    `;
 
     attachDragHandlers(el, v);
     gridEl.appendChild(el);
@@ -844,17 +847,9 @@ function startLevel(levelNum) {
     return;
   }
 
-  // Level 2: apply random rotation for anti-cheat (prevents memorisation)
-  let finalDef = levelDef;
-  if (levelNum === 2) {
-    const angles = [0, 90, 180, 270];
-    const rotation = angles[Math.floor(Math.random() * angles.length)];
-    state.rotation = rotation;
-    finalDef = applyRotation(levelDef, rotation);
-    console.log(`[Anti-cheat] Level ${levelNum} rotated ${rotation}°`);
-  } else {
-    state.rotation = 0;
-  }
+  // No rotation — puzzle is always shown as designed, exit always on the right
+  const finalDef = levelDef;
+  state.rotation = 0;
 
   // Deep copy vehicles
   state.vehicles = finalDef.vehicles.map(v => ({ ...v }));

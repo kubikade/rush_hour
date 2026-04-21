@@ -434,6 +434,47 @@ body::after {
   height: 10%;
 }
 
+/* ---------- Vehicle Direction Arrows ---------- */
+.veh-arrow {
+  position: absolute;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.15s ease;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Horizontal vehicle: arrows at left / right centre */
+.orient-H .veh-arrow-start {
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.orient-H .veh-arrow-end {
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Vertical vehicle: arrows at top / bottom centre */
+.orient-V .veh-arrow-start {
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.orient-V .veh-arrow-end {
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Fade arrows while dragging — reduces visual noise */
+.vehicle.dragging .veh-arrow {
+  opacity: 0;
+}
+
 /* ---------- Tutorial Overlay ---------- */
 #tutorial-overlay {
   position: absolute;
