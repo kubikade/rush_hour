@@ -8,33 +8,36 @@
 
 /* ---------- CSS Custom Properties ---------- */
 :root {
-  --bg-dark:       #080c14;
-  --bg-panel:      #0d1526;
-  --bg-card:       #111e33;
-  --neon-blue:     #00d4ff;
-  --neon-green:    #00ff88;
-  --neon-red:      #ff3366;
-  --neon-orange:   #ff8800;
-  --neon-purple:   #b066ff;
-  --text-primary:  #e8f4ff;
-  --text-muted:    #5a7a9a;
-  --border-glow:   rgba(0, 212, 255, 0.3);
-  --grid-bg:       #0a1628;
-  --grid-line:     rgba(0, 212, 255, 0.08);
-  --cell-size:     min(12.5vw, 68px);
-  --grid-gap:      3px;
+  --bg-dark: #080c14;
+  --bg-panel: #0d1526;
+  --bg-card: #111e33;
+  --neon-blue: #00d4ff;
+  --neon-green: #00ff88;
+  --neon-red: #ff3366;
+  --neon-orange: #ff8800;
+  --neon-purple: #b066ff;
+  --text-primary: #e8f4ff;
+  --text-muted: #5a7a9a;
+  --border-glow: rgba(0, 212, 255, 0.3);
+  --grid-bg: #0a1628;
+  --grid-line: rgba(0, 212, 255, 0.08);
+  --cell-size: min(12.5vw, 68px);
+  --grid-gap: 3px;
   --border-radius: 12px;
-  --transition:    0.15s ease;
+  --transition: 0.15s ease;
 }
 
 /* ---------- Reset & Base ---------- */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -67,15 +70,20 @@ body::after {
   width: 200%;
   height: 200%;
   background: radial-gradient(ellipse at 30% 20%, rgba(0, 212, 255, 0.04) 0%, transparent 50%),
-              radial-gradient(ellipse at 70% 80%, rgba(0, 255, 136, 0.03) 0%, transparent 50%);
+    radial-gradient(ellipse at 70% 80%, rgba(0, 255, 136, 0.03) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
   animation: ambientPulse 8s ease-in-out infinite alternate;
 }
 
 @keyframes ambientPulse {
-  from { opacity: 0.5; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0.5;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* ---------- App Shell ---------- */
@@ -166,7 +174,9 @@ body::after {
 .hud-card::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 2px;
   background: linear-gradient(90deg, var(--neon-blue), var(--neon-green));
 }
@@ -198,8 +208,15 @@ body::after {
 }
 
 @keyframes timerPulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.4; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
 }
 
 /* ---------- Game Grid Container ---------- */
@@ -225,9 +242,17 @@ body::after {
 }
 
 @keyframes borderFlow {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 #grid-border-inner {
@@ -257,9 +282,17 @@ body::after {
   font-weight: bold;
 }
 
-.exit-door.exit-left::after   { content: '◀'; }
-.exit-door.exit-top::after    { content: '▲'; }
-.exit-door.exit-bottom::after { content: '▼'; }
+.exit-door.exit-left::after {
+  content: '◀';
+}
+
+.exit-door.exit-top::after {
+  content: '▲';
+}
+
+.exit-door.exit-bottom::after {
+  content: '▼';
+}
 
 /* ---------- Game Grid ---------- */
 #game-grid {
@@ -332,14 +365,12 @@ body::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(
-    90deg,
-    transparent,
-    transparent 40%,
-    rgba(255, 255, 255, 0.06) 40%,
-    rgba(255, 255, 255, 0.06) 60%,
-    transparent 60%
-  );
+  background: repeating-linear-gradient(90deg,
+      transparent,
+      transparent 40%,
+      rgba(255, 255, 255, 0.06) 40%,
+      rgba(255, 255, 255, 0.06) 60%,
+      transparent 60%);
   border-radius: inherit;
 }
 
@@ -452,6 +483,7 @@ body::after {
   top: 50%;
   transform: translateY(-50%);
 }
+
 .orient-H .veh-arrow-end {
   right: 4px;
   top: 50%;
@@ -464,6 +496,7 @@ body::after {
   left: 50%;
   transform: translateX(-50%);
 }
+
 .orient-V .veh-arrow-end {
   bottom: 4px;
   left: 50%;
@@ -502,10 +535,25 @@ body::after {
 }
 
 @keyframes handSwipe {
-  0%   { transform: translateX(-20px); opacity: 0.5; }
-  40%  { transform: translateX(20px);  opacity: 1; }
-  60%  { transform: translateX(20px);  opacity: 1; }
-  100% { transform: translateX(-20px); opacity: 0.5; }
+  0% {
+    transform: translateX(-20px);
+    opacity: 0.5;
+  }
+
+  40% {
+    transform: translateX(20px);
+    opacity: 1;
+  }
+
+  60% {
+    transform: translateX(20px);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(-20px);
+    opacity: 0.5;
+  }
 }
 
 .tutorial-text {
@@ -571,7 +619,8 @@ body::after {
   transition: opacity 0.2s;
 }
 
-.btn:hover::before, .btn:active::before {
+.btn:hover::before,
+.btn:active::before {
   opacity: 0.12;
 }
 
@@ -650,7 +699,9 @@ body::after {
 .modal-card::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 3px;
   background: linear-gradient(90deg, var(--neon-blue), var(--neon-green), var(--neon-blue));
   background-size: 200%;
@@ -865,7 +916,9 @@ body::after {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ---------- Win Flash Overlay ---------- */
@@ -882,9 +935,19 @@ body::after {
 }
 
 @keyframes winFlash {
-  0%   { opacity: 0; background: radial-gradient(circle, rgba(0, 255, 136, 0.4), transparent 70%); }
-  30%  { opacity: 1; }
-  100% { opacity: 0; background: radial-gradient(circle, rgba(0, 255, 136, 0.0), transparent 70%); }
+  0% {
+    opacity: 0;
+    background: radial-gradient(circle, rgba(0, 255, 136, 0.4), transparent 70%);
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    background: radial-gradient(circle, rgba(0, 255, 136, 0.0), transparent 70%);
+  }
 }
 
 /* ---------- Toast Notification ---------- */
@@ -944,7 +1007,9 @@ body::after {
 }
 
 /* ---------- Utility ---------- */
-.hidden { display: none !important; }
+.hidden {
+  display: none !important;
+}
 
 .glow-text {
   text-shadow: 0 0 12px currentColor;

@@ -8,18 +8,18 @@
 // SECTION 1: FIREBASE CONFIGURATION (Paste your credentials here)
 // ============================================================
 const firebaseConfig = {
-  apiKey:            "AIzaSyDuwfL6stihPCPOSdLm83DOyGTKqDu056s",
-  authDomain:        "rush-hour-76a77.firebaseapp.com",
+  apiKey: "AIzaSyDuwfL6stihPCPOSdLm83DOyGTKqDu056s",
+  authDomain: "rush-hour-76a77.firebaseapp.com",
   // ⚠️  REQUIRED for Realtime Database — format:
   //     https://<project-id>-default-rtdb.firebaseio.com
   //  or https://<project-id>-default-rtdb.<region>.firebasedatabase.app
   //  Find it in: Firebase Console → Realtime Database → Data tab (URL shown at the top)
-  databaseURL:       "https://rush-hour-76a77-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId:         "rush-hour-76a77",
-  storageBucket:     "rush-hour-76a77.firebasestorage.app",
+  databaseURL: "https://rush-hour-76a77-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "rush-hour-76a77",
+  storageBucket: "rush-hour-76a77.firebasestorage.app",
   messagingSenderId: "718984440819",
-  appId:             "1:718984440819:web:00512625166e277e50c086",
-  measurementId:     "G-C3WHDPNFJ7"
+  appId: "1:718984440819:web:00512625166e277e50c086",
+  measurementId: "G-C3WHDPNFJ7"
 };
 
 // ============================================================
@@ -118,20 +118,20 @@ const LEVELS = {
      *   L          — V truck, row 0 col 5  (3 cells)
      */
     vehicles: [
-      { id: 'redcar', type: 'car',   orient: 'H', row: 2, col: 1, cssClass: 'red-car'     }, // A
-      { id: 'v_B',    type: 'truck', orient: 'H', row: 0, col: 1, cssClass: 'orange-truck' }, // B — 3 cells
-      { id: 'v_C',    type: 'truck', orient: 'H', row: 1, col: 0, cssClass: 'teal-truck'   }, // C — 3 cells
-      { id: 'v_D',    type: 'car',   orient: 'H', row: 3, col: 0, cssClass: 'yellow-car'   }, // D
-      { id: 'v_E',    type: 'car',   orient: 'H', row: 4, col: 4, cssClass: 'green-car'    }, // E
-      { id: 'v_F',    type: 'car',   orient: 'H', row: 5, col: 1, cssClass: 'blue-car'     }, // F
-      { id: 'v_G',    type: 'car',   orient: 'H', row: 5, col: 3, cssClass: 'purple-car'   }, // G
-      { id: 'v_H',    type: 'car',   orient: 'V', row: 4, col: 0, cssClass: 'pink-car'     }, // H
-      { id: 'v_I',    type: 'car',   orient: 'V', row: 3, col: 2, cssClass: 'cyan-truck'   }, // I
-      { id: 'v_J',    type: 'car',   orient: 'V', row: 1, col: 3, cssClass: 'blue-car'     }, // J
-      { id: 'v_K',    type: 'car',   orient: 'V', row: 3, col: 3, cssClass: 'green-car'    }, // K
-      { id: 'v_L',    type: 'truck', orient: 'V', row: 0, col: 5, cssClass: 'purple-car'   }, // L — 3 cells
+      { id: 'redcar', type: 'car', orient: 'H', row: 2, col: 1, cssClass: 'red-car' }, // A
+      { id: 'v_B', type: 'truck', orient: 'H', row: 0, col: 1, cssClass: 'orange-truck' }, // B — 3 cells
+      { id: 'v_C', type: 'truck', orient: 'H', row: 1, col: 0, cssClass: 'teal-truck' }, // C — 3 cells
+      { id: 'v_D', type: 'car', orient: 'H', row: 3, col: 0, cssClass: 'yellow-car' }, // D
+      { id: 'v_E', type: 'car', orient: 'H', row: 4, col: 4, cssClass: 'green-car' }, // E
+      { id: 'v_F', type: 'car', orient: 'H', row: 5, col: 1, cssClass: 'blue-car' }, // F
+      { id: 'v_G', type: 'car', orient: 'H', row: 5, col: 3, cssClass: 'purple-car' }, // G
+      { id: 'v_H', type: 'car', orient: 'V', row: 4, col: 0, cssClass: 'pink-car' }, // H
+      { id: 'v_I', type: 'car', orient: 'V', row: 3, col: 2, cssClass: 'cyan-truck' }, // I
+      { id: 'v_J', type: 'car', orient: 'V', row: 1, col: 3, cssClass: 'blue-car' }, // J
+      { id: 'v_K', type: 'car', orient: 'V', row: 3, col: 3, cssClass: 'green-car' }, // K
+      { id: 'v_L', type: 'truck', orient: 'V', row: 0, col: 5, cssClass: 'purple-car' }, // L — 3 cells
     ],
-    exitSide:  'right',
+    exitSide: 'right',
     exitIndex: 2,
   },
 };
@@ -872,7 +872,15 @@ function startLevel(levelNum) {
   state.startTime = Date.now();
   state.gameActive = true;
 
-  startTimer();
+  if (levelNum === 0) {
+    // Tutorial — no time pressure, show ∞ instead of a countdown
+    clearInterval(state.timerInterval);
+    state.timerInterval = null;
+    document.getElementById('timer-display').textContent = '∞';
+    document.getElementById('timer-display').classList.remove('warning', 'critical');
+  } else {
+    startTimer();
+  }
 }
 
 // ============================================================
