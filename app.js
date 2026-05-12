@@ -354,8 +354,10 @@ function renderGrid() {
     el.style.transform = 'translate(0,0)';
     el.setAttribute('aria-label', `${v.type} ${v.id} at row ${v.row + 1} col ${v.col + 1}`);
 
-    // Directional arrows — show axis the vehicle can slide along
-    const [arrowA, arrowB] = v.orient === 'H' ? ['◀', '▶'] : ['▲', '▼'];
+    // Directional arrows — \uFE0E (VS15) forces text glyph, not emoji rendering
+    const [arrowA, arrowB] = v.orient === 'H'
+      ? ['\u25C0\uFE0E', '\u25B6\uFE0E']   // ◀︎ ▶︎
+      : ['\u25B2\uFE0E', '\u25BC\uFE0E'];  // ▲︎ ▼︎
     el.innerHTML = `
       <span class="veh-arrow veh-arrow-start" aria-hidden="true">${arrowA}</span>
       <span class="veh-arrow veh-arrow-end"   aria-hidden="true">${arrowB}</span>
