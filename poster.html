@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Rush Hour Poster - AIC VOID 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #080c14;
+      --neon-blue: #00d4ff;
+      --neon-green: #00ff88;
+      --text-primary: #e8f4ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: white; /* Pro tisk šetříme toner kolem papíru, ale poster bude tmavý */
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* A4 Formát */
+    .page {
+      width: 210mm;
+      height: 297mm;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start; /* Posun nahoru */
+      padding: 20mm;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    /* Background Ambient Grid */
+    .page::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+      z-index: 1;
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-around;
+      border: 2px solid var(--neon-blue);
+      border-radius: 15px;
+      padding: 10mm;
+      text-align: center;
+    }
+
+    header {
+      margin-top: 10mm;
+    }
+
+    .logo-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 80px;
+      font-weight: 900;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      margin-bottom: 5mm;
+    }
+
+    .logo-subtitle {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 24px;
+      color: var(--neon-blue);
+      letter-spacing: 8px;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    .main-cta {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 56px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+      margin: 15mm 0;
+    }
+
+    .qr-outer-frame {
+      border: 4px solid var(--neon-blue);
+      padding: 10mm;
+      border-radius: 30px;
+      background: rgba(0, 212, 255, 0.05);
+      box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+    }
+
+    .qr-container {
+      background: white;
+      padding: 8mm;
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 90mm; /* Zmenšeno ze 110mm */
+    }
+
+    .qr-container img {
+      width: 70mm; /* Zmenšeno z 90mm */
+      height: 70mm;
+      display: block;
+    }
+
+    .url-text {
+      color: #080c14;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 5mm;
+      letter-spacing: 1px;
+    }
+
+    footer {
+      margin-bottom: 5mm;
+    }
+
+    .footer-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      color: var(--neon-green);
+      letter-spacing: 2px;
+    }
+
+    /* Print settings */
+    @media print {
+      body { background: none; padding: 0; }
+      .page { box-shadow: none; margin: 0; }
+      @page { size: A4; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page">
+    <div class="content">
+      <header>
+        <div class="logo-title">Rush Hour</div>
+      </header>
+
+      <div class="main-cta">Zahraj si hru!</div>
+
+      <div class="qr-outer-frame">
+        <div class="qr-container">
+          <!-- QR Code pointing to your GitHub Pages URL -->
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=https://kubikade.github.io/rush_hour/" alt="QR Code">
+          <div class="url-text">kubikade.github.io/rush_hour</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

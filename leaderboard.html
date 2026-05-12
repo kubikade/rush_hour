@@ -536,7 +536,7 @@
 
     <!-- ── Header ── -->
     <header class="lb-header">
-      <h1 class="lb-title">Command Center</h1>
+      <h1 class="lb-title">Leaderboard</h1>
       <p class="lb-subtitle">Rush Hour — AIC VOID 2026</p>
       <span class="live-badge">
         <span class="live-dot"></span>
@@ -633,7 +633,7 @@
     function subscribeLeaderboard() {
       if (!db) return;
 
-      const ref = db.ref('leaderboard');
+      const ref = db.ref('public_leaderboard');
 
       // Listen for any changes (added / changed / removed)
       ref.on('value', snapshot => {

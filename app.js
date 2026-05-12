@@ -55,13 +55,37 @@ async function submitGameData(data) {
     console.warn('[Firebase] Database not available, skipping submit.');
     return null;
   }
-  const entry = {
-    ...data,
-    timestamp: Date.now(),
+  
+  const timestamp = Date.now();
+  
+  // 1. Veřejná data pro leaderboard (BEZ emailu)
+  const publicEntry = {
+    nickname: data.nickname,
+    moves: data.moves,
+    timeTakenMS: data.timeTakenMS,
+    won: data.won,
+    timestamp: timestamp
   };
-  const ref = db.ref('leaderboard').push();
-  await ref.set(entry);
-  return ref.key;
+
+  // 2. Soukromá data pro organizátora (včetně emailu)
+  const privateEntry = {
+    ...data,
+    timestamp: timestamp
+  };
+
+  try {
+    // Zapíšeme do obou větví
+    const publicRef = db.ref('public_leaderboard').push();
+    await publicRef.set(publicEntry);
+    
+    const privateRef = db.ref('private_submissions').push();
+    await privateRef.set(privateEntry);
+    
+    return publicRef.key;
+  } catch (e) {
+    console.error('[Firebase] Submission failed:', e);
+    throw e;
+  }
 }
 
 // ============================================================
